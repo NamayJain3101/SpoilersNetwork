@@ -1,4 +1,7 @@
-const app = require('express')()
+const express = require('express')
+
+const app = express()
+
 const server = require('http').Server(app)
 const next = require('next')
 
@@ -14,7 +17,14 @@ const PORT = process.env.port || 3000
 
 connectDb()
 
+app.use(express.json());
+
 nextApp.prepare().then(() => {
+
+    app.use('/api/signup', require('./api/signup'))
+    app.use('/api/auth', require('./api/auth'))
+    app.use(`/api/search`, require('./api/search'))
+
     app.all("*", (req, res) => handle(req, res))
     server.listen(PORT, err => {
         if (err) {

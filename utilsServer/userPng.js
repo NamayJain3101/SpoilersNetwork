@@ -1,2 +1,1 @@
-const userPng =
-  "https://res.cloudinary.com/indersingh/image/upload/v1593464618/App/user_mklcpl.png";
+const userPng = "https://res.cloudinary.com/namay3101/image/upload/v1621160422/user_mklcpl_w9jefv.png"
