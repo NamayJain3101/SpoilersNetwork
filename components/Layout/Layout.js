@@ -28,7 +28,7 @@ const Layout = ({ children, user }) => {
 										<SideMenu user={user} />
 									</Sticky>
 								</Grid.Column>
-								<Grid.Column width={10}>
+								<Grid.Column style={{ marginTop: "1rem" }} width={10}>
 									<Visibility context={contextRef}>
 										{children}
 									</Visibility>

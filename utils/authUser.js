@@ -8,7 +8,6 @@ import cookie from "js-cookie"
 export const registerUser = async(user, profilePicUrl, setError, setLoading) => {
     try {
         const res = await axios.post(`${baseUrl}/api/signup`, { user, profilePicUrl })
-        console.log(res)
         setToken(res.data)
     } catch (err) {
         console.log(err)

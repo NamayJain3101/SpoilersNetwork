@@ -6,13 +6,14 @@ import {
   Button,
   Card,
   Container,
-  Icon
+  Icon,
+  Message
 } from "semantic-ui-react";
 import { range } from "lodash";
 
 export const PlaceHolderPosts = () =>
-  range(1, 3).map(item => (
-    <React.Fragment>
+  range(1, 3).map((item, index) => (
+    <React.Fragment key={index}>
       <Placeholder key={item} fluid>
         <Placeholder.Header image>
           <Placeholder.Line />
@@ -60,8 +61,8 @@ export const PlaceHolderSuggestions = () => (
 );
 
 export const PlaceHolderNotifications = () =>
-  range(1, 10).map(item => (
-    <React.Fragment>
+  range(1, 10).map((item, index) => (
+    <React.Fragment key={index}>
       <Placeholder key={item}>
         <Placeholder.Header image>
           <Placeholder.Line />
@@ -72,9 +73,21 @@ export const PlaceHolderNotifications = () =>
     </React.Fragment>
   ));
 
-export const EndMessage = () => (
+export const EndMessage = ({ header, message }) => (
   <Container textAlign="center">
-    <Icon name="refresh" size="large" />
+    <Message
+      style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
+      icon={{
+        name: "meh",
+        style: {
+          marginBottom: "1rem",
+          marginRight: "0",
+        }
+      }}
+      info
+      header={header}
+      content={message}
+    />
     <Divider hidden />
   </Container>
 );

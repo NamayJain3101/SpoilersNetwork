@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import baseUrl from '../../utils/baseUrl'
 import axios from "axios"
 import { Image, List, Search } from 'semantic-ui-react'
@@ -40,13 +40,13 @@ const SearchComponent = () => {
     return (
         <React.Fragment>
             <Search
-                onBlur={(e) => {
-                    results.length > 0 && setText([])
-                    loading && setLoading(false)
-                    setText("")
-                }}
+                // onBlur={(e) => {
+                //     results.length > 0 && setText([])
+                //     loading && setLoading(false)
+                //     setText("")
+                // }}
                 loading={loading}
-                value={text}
+                value={text || ""}
                 resultRenderer={ResultRenderer}
                 results={results}
                 onSearchChange={handleChange}
@@ -62,9 +62,9 @@ const SearchComponent = () => {
 const ResultRenderer = ({ _id, profilePicUrl, name }) => {
     return (
         <List key={_id}>
-            <List.Item>
-                <Image src={profilePicUrl} alt="ProfilePic" avatar={true} />
-                <List.Content header={name} as="a" />
+            <List.Item style={{ display: "flex", alignItems: "center", justifyContent: "start" }}>
+                <Image src={profilePicUrl} alt="ProfilePic" avatar circular style={{ borderRadius: "50%" }} size="mini" />
+                <List.Content header={name} as="a" style={{ margin: "0" }} />
             </List.Item>
         </List>
     )

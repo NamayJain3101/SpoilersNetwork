@@ -6,7 +6,7 @@ import { FooterMessage, HeaderMessage } from '../components/Common/WelcomeMessag
 import { regexUserName, registerUser } from '../utils/authUser'
 import axios from 'axios'
 import baseUrl from '../utils/baseUrl'
-import uploadPic from '../utils/uploadPicToCloudinary'
+import { uploadPic } from '../utils/uploadPicToCloudinary'
 
 let cancel
 
@@ -81,7 +81,8 @@ const Signup = () => {
         setFormLoading(true)
         let profilePicUrl
         if (media !== null) {
-            profilePicUrl = await uploadPic(media)
+            const res = await uploadPic(media)
+            profilePicUrl = res.url
         }
         if (media !== null && !profilePicUrl) {
             setFormLoading(false)

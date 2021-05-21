@@ -21,7 +21,6 @@ router.get("/:searchText", authMiddleware, async(req, res) => {
         } else {
             return res.json({})
         }
-        console.log(results)
     } catch (err) {
         console.log(err)
         return res.status(500).send("Server Error")
