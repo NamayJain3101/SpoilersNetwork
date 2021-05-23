@@ -1,7 +1,11 @@
+import { useRouter } from 'next/router'
 import React from 'react'
 import { Form, Header, Icon, Image, Segment } from 'semantic-ui-react'
 
-const ImageDropDiv = ({ highlighted, setHighlighted, inputRef, handleChange, mediaPreview, setMediaPreview, setMedia }) => {
+const ImageDropDiv = ({ profilePicUrl, highlighted, setHighlighted, inputRef, handleChange, mediaPreview, setMediaPreview, setMedia }) => {
+    const router = useRouter()
+    const signUpRoute = router.pathname === '/signup'
+
     return (
         <React.Fragment>
             <Form.Field>
@@ -38,14 +42,27 @@ const ImageDropDiv = ({ highlighted, setHighlighted, inputRef, handleChange, med
                                     placeholder
                                     basic
                                 >
-                                    <Header icon>
-                                        <Icon
-                                            name="file"
-                                            style={{ cursor: "pointer" }}
-                                            onClick={() => inputRef.current.click()}
-                                        />
-                                        Drag n Drop or Click to Upload Image
-                                    </Header>
+                                    {signUpRoute ? (
+                                        <Header icon>
+                                            <Icon
+                                                name="file"
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() => inputRef.current.click()}
+                                            />
+                                            Drag n Drop or Click to Upload Image
+                                        </Header>
+                                    ) : (
+                                        <span style={{ textAlign: "center" }}>
+                                            <Image
+                                                src={profilePicUrl}
+                                                alt="ProfilePic"
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() => inputRef.current.click()}
+                                                size="large"
+                                                centered
+                                            />
+                                        </span>
+                                    )}
                                 </Segment>
                             </React.Fragment>
                         ) : (

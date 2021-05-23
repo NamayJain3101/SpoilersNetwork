@@ -7,6 +7,7 @@ const authMiddleware = require('../middleware/authMiddleware')
 const UserModel = require('../models/UserModel')
 const PostModel = require('../models/PostModel')
 const FollowerModel = require('../models/FollowerModel')
+const { newLikeNotification, removeLikeNotification, newCommentNotification, removeCommentNotification } = require('../utilsServer/notificationsActions')
 
 const { v4: uuidv4 } = require('uuid');
 
@@ -50,6 +51,7 @@ router.get('/', authMiddleware, async(req, res) => {
     const { pageNo } = req.query
     const pageNumber = Number(pageNo)
     const size = 8
+    const { userId } = req
     try {
         let posts
         if (pageNumber === 1) {
@@ -58,7 +60,36 @@ router.get('/', authMiddleware, async(req, res) => {
             const skips = size * (pageNumber - 1)
             posts = await PostModel.find({}).skip(skips).limit(size).sort({ createdAt: -1 }).populate('user').populate('comments.user')
         }
-        return res.status(200).json(posts)
+        const loggedUser = await FollowerModel.findOne({ user: userId }).populate('user').populate('following.user')
+        if (loggedUser.user.role === "root") {
+            return res.status(200).json(posts)
+        }
+        if (posts.length === 0) {
+            return res.json([])
+        }
+        let postsToBeSent = []
+        if (loggedUser.following.length === 0) {
+            postsToBeSent = posts.filter(post => post.user._id.toString() === userId.toString() || post.user.role === "root")
+        } else {
+            for (let i = 0; i < loggedUser.following.length; i++) {
+                if (loggedUser.following[i].user.role !== "root") {
+                    const foundPostsFromFollowing = posts.filter(post => {
+                        return (
+                            post.user._id.toString() === loggedUser.following[i].user._id.toString()
+                        )
+                    })
+                    if (foundPostsFromFollowing.length > 0) {
+                        postsToBeSent.push(...foundPostsFromFollowing)
+                    }
+                }
+            }
+            const foundOwnPosts = posts.filter(post => post.user._id.toString() === userId.toString() || post.user.role === "root")
+            if (foundOwnPosts.length > 0) {
+                postsToBeSent.push(...foundOwnPosts)
+            }
+        }
+        postsToBeSent.length > 0 && postsToBeSent.sort((a, b) => [new Date(b.createdAt) - new Date(a.createdAt)])
+        return res.status(200).json(postsToBeSent)
     } catch (err) {
         console.log(err)
         return res.status(500).send('Server Error')
@@ -69,7 +100,7 @@ router.get('/', authMiddleware, async(req, res) => {
 router.get('/:postId', authMiddleware, async(req, res) => {
     try {
         const { postId } = req.params
-        const post = await PostModel.findById(postId)
+        const post = await PostModel.findById(postId).populate('user').populate('comments.user')
         if (post) {
             return res.status(200).json(post)
         } else {
@@ -124,6 +155,9 @@ router.put('/like/:postId', authMiddleware, async(req, res) => {
             }
             await post.likes.unshift({ user: userId })
             await post.save()
+            if (post.user.toString() !== userId) {
+                await newLikeNotification(userId, postId, post.user.toString())
+            }
             return res.status(200).send("Post Liked")
         } else {
             return res.status(404).send("Post not found")
@@ -148,6 +182,9 @@ router.put('/unlike/:postId', authMiddleware, async(req, res) => {
             const index = post.likes.map(like => like.user.toString()).indexOf(userId)
             await post.likes.splice(index, 1)
             await post.save()
+            if (post.user.toString() !== userId) {
+                await removeLikeNotification(userId, postId, post.user.toString())
+            }
             return res.status(200).send("Post Unliked")
         } else {
             return res.status(404).send("Post not found")
@@ -179,6 +216,7 @@ router.put('/comment/:postId', authMiddleware, async(req, res) => {
     try {
         const { postId } = req.params
         const { text } = req.body
+        const { userId } = req
         if (text.length < 1) {
             return res.status(401).send("Please add comment")
         }
@@ -192,6 +230,9 @@ router.put('/comment/:postId', authMiddleware, async(req, res) => {
             }
             await post.comments.unshift(newComment)
             await post.save()
+            if (post.user.toString() !== userId) {
+                await newCommentNotification(postId, newComment._id, userId, post.user.toString(), text)
+            }
             return res.status(200).json(newComment._id)
         } else {
             return res.status(404).send("Post not found")
@@ -221,6 +262,9 @@ router.delete('/comment/:postId/:commentId', authMiddleware, async(req, res) => 
                     const commentIndex = post.comments.map(com => com._id).indexOf(commentId)
                     await post.comments.splice(commentIndex, 1)
                     await post.save()
+                    if (post.user.toString() !== userId) {
+                        await removeCommentNotification(postId, newComment._id, userId, post.user.toString(), text)
+                    }
                     return res.status(200).send("Comment Deleted Successfully")
                 } else {
                     return res.status(401).send("Unauthorized")
@@ -229,6 +273,9 @@ router.delete('/comment/:postId/:commentId', authMiddleware, async(req, res) => 
             const commentIndex = post.comments.map(com => com._id).indexOf(commentId)
             await post.comments.splice(commentIndex, 1)
             await post.save()
+            if (post.user.toString() !== userId) {
+                await removeCommentNotification(postId, newComment._id, userId, post.user.toString(), text)
+            }
             return res.status(200).send("Comment Deleted Successfully")
         }
     } catch (err) {

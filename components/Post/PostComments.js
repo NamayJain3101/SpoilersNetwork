@@ -1,5 +1,6 @@
+import Link from 'next/link'
 import React, { useState } from 'react'
-import { Comment, Icon, Image } from 'semantic-ui-react'
+import { Comment, Image } from 'semantic-ui-react'
 import { calculateTime } from '../../utils/calculateTime'
 import { deleteComment } from '../../utils/postActions'
 
@@ -14,7 +15,11 @@ const PostComments = ({ comment, postId, user, setComments }) => {
                     <Comment.Avatar src={comment.user.profilePicUrl} />
                     <Comment.Content style={{ display: "flex", justifyContent: "space-between" }}>
                         <div>
-                            <Comment.Author href={`/${comment.user.username}`} style={{ color: "#4183c4" }} as="a">{comment.user.name}</Comment.Author>
+                            <Link href={`/${comment.user.username}`}>
+                                <Comment.Author as="a" style={{ color: "#4183c4" }}>
+                                    {comment.user.name}
+                                </Comment.Author>
+                            </Link>
                             <Comment.Metadata>
                                 <div>{calculateTime(comment.date)}</div>
                             </Comment.Metadata>

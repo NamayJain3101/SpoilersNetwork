@@ -10,7 +10,9 @@ const FollowerModel = require('../models/FollowerModel')
 const isEmail = require('validator/lib/isEmail')
 
 const authMiddleware = require('../middleware/authMiddleware')
+const NotificationModel = require("../models/NotificationModel")
 
+// Get User Data
 router.get('/', authMiddleware, async(req, res) => {
     const { userId } = req
     try {
@@ -18,11 +20,12 @@ router.get('/', authMiddleware, async(req, res) => {
         const userFollowStats = await FollowerModel.findOne({ user: userId })
         return res.status(200).json({ user, userFollowStats })
     } catch (err) {
-        console.log(error)
+        console.log(err)
         return res.status(500).send('Server Error')
     }
 })
 
+// Login User
 router.post('/', async(req, res) => {
     const { email, password } = req.body.user
     try {
@@ -41,6 +44,11 @@ router.post('/', async(req, res) => {
         const isPasswordMatch = await bcrypt.compare(password, user.password)
         if (!isPasswordMatch) {
             return res.status(401).send("Invalid Credentials")
+        }
+
+        const notificationModel = await NotificationModel.findOne({ user: user._id })
+        if (!notificationModel) {
+            await new NotificationModel({ user: user._id, notifications: [] }).save()
         }
 
         const payload = { userId: user._id }

@@ -49,7 +49,7 @@ const CreatePost = ({ user, setPosts }) => {
 
     return (
         <React.Fragment>
-            <Form error={error !== null} onSubmit={handleSubmit}>
+            <Form style={{ margin: "0 1rem" }} error={error !== null} onSubmit={handleSubmit}>
                 <Message
                     error
                     onDismiss={() => setError(null)}
@@ -148,7 +148,8 @@ const CreatePost = ({ user, setPosts }) => {
                 />
             </Form>
             <Divider hidden />
-            <Divider />
+            <Divider style={{ margin: "0 1rem" }} />
+            <Divider hidden />
         </React.Fragment>
     )
 }

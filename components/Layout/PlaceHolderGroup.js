@@ -76,7 +76,14 @@ export const PlaceHolderNotifications = () =>
 export const EndMessage = ({ header, message }) => (
   <Container textAlign="center">
     <Message
-      style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        margin: "0 1rem",
+        width: "auto"
+      }}
       icon={{
         name: "meh",
         style: {

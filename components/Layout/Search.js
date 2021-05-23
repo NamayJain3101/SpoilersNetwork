@@ -3,14 +3,14 @@ import baseUrl from '../../utils/baseUrl'
 import axios from "axios"
 import { Image, List, Search } from 'semantic-ui-react'
 import Cookies from 'js-cookie'
-import { Router } from 'next/router'
+import Router from 'next/router'
 
 let cancel
 
 const SearchComponent = () => {
     const [text, setText] = useState("")
     const [loading, setLoading] = useState(false)
-    const [results, setResults] = useState([])
+    const [result, setResults] = useState([])
 
     const handleChange = async (e) => {
         const { value } = e.target
@@ -40,19 +40,20 @@ const SearchComponent = () => {
     return (
         <React.Fragment>
             <Search
-                // onBlur={(e) => {
-                //     results.length > 0 && setText([])
-                //     loading && setLoading(false)
-                //     setText("")
-                // }}
+                onBlur={(e) => {
+                    result.length > 0 && setText([])
+                    loading && setLoading(false)
+                    setText("")
+                }}
                 loading={loading}
                 value={text || ""}
                 resultRenderer={ResultRenderer}
-                results={results}
+                results={result}
+                showNoResults
                 onSearchChange={handleChange}
                 minCharacters={1}
                 onResultSelect={(e, data) => {
-                    Router.push(`${data.result.username}`)
+                    Router.push(`/${data.result.username}`)
                 }}
             />
         </React.Fragment>
