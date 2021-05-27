@@ -10,19 +10,19 @@ export const calculateTime = (createdAt) => {
     if (diffInHrs < 24) {
         return (
             <React.Fragment>
-                Today <Moment format="hh:mm A">{createdAt}</Moment>
+                <Moment format="hh:mm A">{createdAt}</Moment>
             </React.Fragment>
         )
     } else if (diffInHrs > 24 && diffInHrs < 36) {
         return (
             <React.Fragment>
-                Yesterday <Moment format="hh:mm A">{createdAt}</Moment>
+                Yesterday
             </React.Fragment>
         )
     } else if (diffInHrs > 36) {
         return (
             <React.Fragment>
-                <Moment format="DD/MM/YYYY hh:mm A">{createdAt}</Moment>
+                <Moment format="DD/MM/YYYY">{createdAt}</Moment>
             </React.Fragment>
         )
     }

@@ -4,11 +4,12 @@ const router = express.Router()
 const authMiddleware = require("../middleware/authMiddleware")
 
 router.get("/:searchText", authMiddleware, async(req, res) => {
-    const { searchText } = req.params
-    if (searchText.length === 0) {
-        return
-    }
     try {
+        const { searchText } = req.params
+        const { userId } = req
+        if (searchText.length === 0) {
+            return
+        }
         let userPattern = new RegExp(`^${searchText}`)
         const results = await UserModel.find({
             name: {
@@ -16,8 +17,9 @@ router.get("/:searchText", authMiddleware, async(req, res) => {
                 $options: "i"
             }
         })
-        if (results.length !== 0) {
-            res.json(results)
+        const resultsToBeSent = results.filter(result => result._id.toString() !== userId)
+        if (resultsToBeSent.length !== 0) {
+            res.json(resultsToBeSent)
         } else {
             return res.json({})
         }

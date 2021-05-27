@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import baseUrl from '../utils/baseUrl'
 import { parseCookies } from 'nookies'
@@ -10,6 +10,10 @@ import { Segment } from 'semantic-ui-react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { EndMessage, PlaceHolderPosts } from '../components/Layout/PlaceHolderGroup'
 import Cookies from 'js-cookie'
+import io from 'socket.io-client'
+import { getUserInfo } from '../utils/getUserInfo'
+import MessageNotificationModal from '../components/Messages/MessageNotificationModal'
+import { newMsgSound } from '../utils/newMsgSound'
 
 const Index = ({ user, userFollowStats, postsData, errorLoading }) => {
     const [posts, setPosts] = useState(postsData)
@@ -18,8 +22,33 @@ const Index = ({ user, userFollowStats, postsData, errorLoading }) => {
     const [hasMore, setHasMore] = useState(true)
     const [pageNo, setPageNo] = useState(2)
 
+    const socket = useRef()
+
+    const [newMsgRecieved, setNewMsgRecieved] = useState(null)
+    const [newMsgModal, setNewMsgModal] = useState(false)
+
     useEffect(() => {
         document.title = `Welcome, ${user.name.split(" ")[0]}`
+        if (!socket.current) {
+            socket.current = io(baseUrl)
+        }
+        if (socket.current) {
+            socket.current.emit("join", { userId: user._id })
+            socket.current.on("newMsgRecieved", async ({ newMsg }) => {
+                const { name, profilePicUrl } = await getUserInfo(newMsg.sender)
+                if (user.newMessagePopup) {
+                    setNewMsgRecieved({ ...newMsg, senderName: name, senderProfilePic: profilePicUrl })
+                    setNewMsgModal(true)
+                }
+                newMsgSound(name)
+            })
+        }
+        return () => {
+            if (socket.current) {
+                socket.current.emit("disconnect")
+                socket.current.off()
+            }
+        }
     }, [])
 
     useEffect(() => {
@@ -50,6 +79,15 @@ const Index = ({ user, userFollowStats, postsData, errorLoading }) => {
     return (
         <React.Fragment>
             {showToaster && <PostDeleteToastr />}
+            {newMsgModal && newMsgRecieved !== null && (
+                <MessageNotificationModal
+                    socket={socket.current}
+                    setNewMsgModal={setNewMsgModal}
+                    newMsgModal={newMsgModal}
+                    newMsgRecieved={newMsgRecieved}
+                    user={user}
+                />
+            )}
             <Segment>
                 <CreatePost user={user} setPosts={setPosts} />
                 {posts.length === 0 || errorLoading ? (

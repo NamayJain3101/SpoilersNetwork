@@ -3,11 +3,13 @@ import baseUrl from '../../utils/baseUrl'
 import axios from "axios"
 import { Image, List, Search } from 'semantic-ui-react'
 import Cookies from 'js-cookie'
-import Router from 'next/router'
+import { useRouter } from 'next/router'
 
 let cancel
 
-const SearchComponent = () => {
+const ChatListSearch = ({ chats, setChats }) => {
+    const router = useRouter()
+
     const [text, setText] = useState("")
     const [loading, setLoading] = useState(false)
     const [result, setResults] = useState([])
@@ -39,6 +41,23 @@ const SearchComponent = () => {
         setLoading(false)
     }
 
+    const addChat = (result) => {
+        const alreadyInChat = chats.length > 0 && chats.filter(chat => chat.messagesWith === result._id).length > 0
+        if (alreadyInChat) {
+            return router.push(`/messages?message=${result._id}`)
+        } else {
+            const newChat = {
+                messagesWith: result._id,
+                name: result.name,
+                profilePicUrl: result.profilePicUrl,
+                lastMessage: "",
+                date: Date.now()
+            }
+            setChats(chats => ([newChat, ...chats]))
+            return router.push(`/messages?message=${result._id}`)
+        }
+    }
+
     return (
         <React.Fragment>
             <Search
@@ -55,7 +74,7 @@ const SearchComponent = () => {
                 onSearchChange={handleChange}
                 minCharacters={1}
                 onResultSelect={(e, data) => {
-                    Router.push(`/${data.result.username}`)
+                    addChat(data.result)
                 }}
             />
         </React.Fragment>
@@ -73,4 +92,4 @@ const ResultRenderer = ({ _id, profilePicUrl, name }) => {
     )
 }
 
-export default SearchComponent
+export default ChatListSearch

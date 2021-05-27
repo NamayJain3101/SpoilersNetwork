@@ -11,6 +11,7 @@ const isEmail = require('validator/lib/isEmail')
 
 const authMiddleware = require('../middleware/authMiddleware')
 const NotificationModel = require("../models/NotificationModel")
+const ChatModel = require("../models/ChatModel")
 
 // Get User Data
 router.get('/', authMiddleware, async(req, res) => {
@@ -49,6 +50,11 @@ router.post('/', async(req, res) => {
         const notificationModel = await NotificationModel.findOne({ user: user._id })
         if (!notificationModel) {
             await new NotificationModel({ user: user._id, notifications: [] }).save()
+        }
+
+        const chatModel = await ChatModel.findOne({ user: user._id })
+        if (!chatModel) {
+            await new ChatModel({ user: user._id, chats: [] }).save()
         }
 
         const payload = { userId: user._id }

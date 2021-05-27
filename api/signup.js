@@ -10,6 +10,7 @@ const FollowerModel = require('../models/FollowerModel')
 const NotificationModel = require('../models/NotificationModel')
 
 const isEmail = require('validator/lib/isEmail')
+const ChatModel = require("../models/ChatModel")
 const regexUserName = /^(?!.*\.\.)(?!.*\.$)[^\W][\w.]{0,29}$/;
 const userPng = "https://res.cloudinary.com/namay3101/image/upload/v1621160422/user_mklcpl_w9jefv.png"
 
@@ -82,6 +83,7 @@ router.post('/', async(req, res) => {
         }).save()
 
         await new NotificationModel({ user: user._id, notifications: [] }).save()
+        await new ChatModel({ user: user._id, chats: [] }).save()
 
         const payload = { userId: user._id }
         jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2d" }, (err, token) => {
