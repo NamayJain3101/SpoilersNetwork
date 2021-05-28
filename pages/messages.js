@@ -32,6 +32,22 @@ const Messages = ({ chatsData, errorLoading, user }) => {
 
     const divRef = useRef()
 
+    // Mark chats as read
+    useEffect(() => {
+        const chatsRead = async () => {
+            try {
+                await axios.post(`${baseUrl}/api/chats`, {}, {
+                    headers: {
+                        Authorization: Cookies.get("token")
+                    }
+                })
+            } catch (err) {
+                console.log(err)
+            }
+        }
+        chatsRead();
+    }, [])
+
     // Connecttion
     useEffect(() => {
         document.title = "Messages"

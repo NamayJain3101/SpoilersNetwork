@@ -31,6 +31,22 @@ router.get('/', authMiddleware, async(req, res) => {
     }
 })
 
+// Mark chats as read
+router.post('/', authMiddleware, async(req, res) => {
+    try {
+        const { userId } = req
+        const user = await UserModel.findById(userId)
+        if (user.unreadMessage) {
+            user.unreadMessage = false
+            await user.save()
+        }
+        return res.status(200).send("Chats marked as Read")
+    } catch (err) {
+        console.log(err)
+        return res.status(500).send('Server Error')
+    }
+})
+
 // Get user info
 router.get('/user/:userToFindId', authMiddleware, async(req, res) => {
     try {
