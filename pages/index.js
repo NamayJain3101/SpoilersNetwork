@@ -14,8 +14,9 @@ import io from 'socket.io-client'
 import { getUserInfo } from '../utils/getUserInfo'
 import MessageNotificationModal from '../components/Messages/MessageNotificationModal'
 import { newMsgSound } from '../utils/newMsgSound'
+import NotificationPortal from '../components/Notifications/NotificationPortal'
 
-const Index = ({ user, userFollowStats, postsData, errorLoading }) => {
+const Index = ({ user, postsData, errorLoading }) => {
     const [posts, setPosts] = useState(postsData)
     const [showToaster, setShowToaster] = useState(false)
 
@@ -26,6 +27,9 @@ const Index = ({ user, userFollowStats, postsData, errorLoading }) => {
 
     const [newMsgRecieved, setNewMsgRecieved] = useState(null)
     const [newMsgModal, setNewMsgModal] = useState(false)
+
+    const [newNotification, setNewNotification] = useState(null)
+    const [notificationPopup, setNotificationPopup] = useState(false)
 
     useEffect(() => {
         document.title = `Welcome, ${user.name.split(" ")[0]}`
@@ -57,6 +61,20 @@ const Index = ({ user, userFollowStats, postsData, errorLoading }) => {
         }, [3000])
     }, [showToaster])
 
+    useEffect(() => {
+        if (socket.current) {
+            socket.current.on("newNotificationRecieved", ({ name, username, profilePicUrl, postId }) => {
+                setNewNotification({
+                    name,
+                    profilePicUrl,
+                    username,
+                    postId
+                })
+                setNotificationPopup(true)
+            })
+        }
+    }, [])
+
     const fetchDataOnScroll = async () => {
         try {
             const res = await axios.get(`${baseUrl}/api/posts`, {
@@ -78,6 +96,13 @@ const Index = ({ user, userFollowStats, postsData, errorLoading }) => {
 
     return (
         <React.Fragment>
+            {notificationPopup && newNotification !== null && (
+                <NotificationPortal
+                    newNotification={newNotification}
+                    notificationPopup={notificationPopup}
+                    setNotificationPopup={setNotificationPopup}
+                />
+            )}
             {showToaster && <PostDeleteToastr />}
             {newMsgModal && newMsgRecieved !== null && (
                 <MessageNotificationModal
@@ -104,6 +129,7 @@ const Index = ({ user, userFollowStats, postsData, errorLoading }) => {
                             return (
                                 <CardPost
                                     key={post._id}
+                                    socket={socket}
                                     post={post}
                                     user={user}
                                     setPosts={setPosts}

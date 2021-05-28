@@ -13,6 +13,7 @@ const handle = nextApp.getRequestHandler()
 require('dotenv').config({ path: "./config.env" })
 
 const connectDb = require('./utilsServer/connectDb')
+const { likeOrUnlikePost } = require('./utilsServer/likeOrUnlikePost')
 const { loadMessages, sendMessage, setMessageToUnread, deleteMessage } = require('./utilsServer/messageActions')
 const { addUser, removeUser, findConnectedUser } = require('./utilsServer/roomActions')
 const PORT = process.env.port || 3000
@@ -29,6 +30,18 @@ io.on('connection', (socket) => {
         setInterval(() => {
             socket.emit('connectedUsers', { users: users.filter(user => user.userId !== userId) })
         }, 10000)
+    })
+    socket.on("likePost", async({ postId, userId, like }) => {
+        const { success, error, name, profilePicUrl, username, postByUserId } = await likeOrUnlikePost(postId, userId, like)
+        if (success) {
+            socket.emit("postLiked")
+            if (postByUserId !== userId) {
+                const recieverSocket = findConnectedUser(postByUserId)
+                if (recieverSocket && like) {
+                    io.to(recieverSocket.socketId).emit("newNotificationRecieved", { name, profilePicUrl, username, postId })
+                }
+            }
+        }
     })
     socket.on("loadMessages", async({ userId, messagesWith }) => {
         const { chat, error } = await loadMessages(userId, messagesWith)
